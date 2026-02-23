@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZK Sync Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-10">
+
+
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <!--<h1 class="text-2xl font-bold mb-6 text-gray-800">Manajemen User ZK-Attendance</h1>-->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Manajemen User ZK</h1>
+            <a href="/logout" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 font-semibold text-sm">
+                Logout ({{ current_user.username }})
+            </a>
+        </div>
+        <!-- Info Mesin -->
+        <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 text-blue-700">
+            <p class="font-bold">Mesin Terdaftar:</p>
+            <ul class="list-disc ml-5">
+                {% for m in mesin %} <li>{{ m }}</li> {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Tombol Sinkronisasi -->
+        <form action="/sync" method="POST" class="mb-6">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
+                🚀 Sinkronkan Semua ke Mesin
+            </button>
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="bg-yellow-100 border-t-4 border-yellow-500 text-yellow-700 px-4 py-3 mb-4 shadow-md">
+                {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Tabel Data 
+        <table class="min-w-full bg-white border">
+            <thead>
+                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                    <th class="py-3 px-6 text-left">UID</th>
+                    <th class="py-3 px-6 text-left">User ID</th>
+                    <th class="py-3 px-6 text-left">Nama</th>
+                </tr>
+            </thead>
+            <tbody class="text-gray-600 text-sm font-light">
+                {% for k in karyawan %}
+                <tr class="border-b border-gray-200 hover:bg-gray-100">
+                    <td class="py-3 px-6">{{ k.id }}</td>
+                    <td class="py-3 px-6">{{ k.user_id }}</td>
+                    <td class="py-3 px-6 font-medium">{{ k.nama }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>-->
+<!-- Tabel Data Karyawan -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+            <thead>
+                <tr class="bg-gray-800 text-white uppercase text-xs leading-normal">
+                    <th class="py-3 px-6 text-left">UID</th>
+                    <th class="py-3 px-6 text-left">User ID</th>
+                    <th class="py-3 px-6 text-left">Nama Karyawan</th>
+                    <th class="py-3 px-6 text-center">Status Biometrik</th>
+                    <th class="py-3 px-6 text-center"></th>
+                    <th class="py-3 px-6 text-left">Aksi</th>
+
+                </tr>
+            </thead>
+            <tbody class="text-gray-700 text-sm">
+                {% for k in karyawan %}
+                <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                    <td class="py-3 px-6">{{ k.id }}</td>
+                    <td class="py-3 px-6 font-mono text-blue-600">{{ k.user_id }}</td>
+                    <td class="py-3 px-6 font-semibold">{{ k.nama }}</td>
+                    <td class="py-3 px-6 text-center">
+                        {% if k.fingerprint_template %}
+                            <span class="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold border border-green-200 inline-flex items-center">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                Tersimpan
+                            </span>
+                        {% else %}
+                            <span class="bg-red-100 text-red-700 py-1 px-3 rounded-full text-xs font-bold border border-red-200">
+                                Belum Ada
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3 px-6 text-center">
+                        <div class="flex item-center justify-center space-x-2">
+                            <!-- Tombol Tarik Jari dari Mesin Master -->
+                            <a href="/pull-finger/{{ k.user_id }}" class="text-blue-500 hover:text-blue-700" title="Tarik Jari dari Mesin">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            </a>
+                        </div>
+                    </td>
+                    <td>     
+                        <div class="flex items-center justify-center space-x-3">
+                            <!-- Tombol Pemicu Mode Scan di Mesin -->
+                            <a href="/enroll-finger/{{ k.user_id }}/{{ k.id }}" 
+                            class="flex items-center bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-bold py-1 px-3 rounded shadow transition"
+                            onclick="return confirm('Mulai proses pendaftaran jari di mesin master?')">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path>
+                                </svg>
+                                Scan Jari
+                            </a>
+                            <a href="/delete-user/{{ k.user_id }}/{{ k.id }}" 
+                            class="flex items-center bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-3 rounded shadow transition"
+                            onclick="return confirm('Apakah Anda yakin ingin menghapus user {{ k.nama }} dari SEMUA mesin?')">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                Hapus
+                            </a>
+                        </div>
+                       
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+        
+    </div>
+</body>
+</html>
